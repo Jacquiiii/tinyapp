@@ -50,10 +50,13 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-// receives form submission from '/urls/new'
+// receives form submission from '/urls/new' and adds the url to the urlDatabase object with a random id for a key
 app.post("/urls", (req, res) => {
   console.log(req.body); 
-  res.send("Ok"); // Respond with 'Ok' (we will replace this)
+  const randomKey = generateRandomString();
+  const longURL = req.body.longURL;
+  urlDatabase[randomKey] = longURL;
+  res.redirect(`/urls/:${randomKey}`); // Respond with redirect to /urls/:id
 });
 
 app.listen(PORT, () => {
