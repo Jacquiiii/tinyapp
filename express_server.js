@@ -94,7 +94,7 @@ app.get('/u/:id', (req, res) => {
 });
 
 
-// deletes entry from urls
+// POST route for /urls/:id/delete to remove URLs
 app.post('/urls/:id/delete', (req, res) => {
   const id = req.params.id;
   delete urlDatabase[id];
