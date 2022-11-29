@@ -1,10 +1,22 @@
-// Edge cases to consider: 
-// What would happen if a client requests a short URL with a non-existant id?
-// What happens to the urlDatabase when the server is restarted?
-// What type of status code do our redirects have? What does this status code mean?
+/*---------------------------------TinyApp-------------------------------------*/
 
+const express = require('express');
+const app = express();
+const PORT = 8080; // default port 8080
 
-// function to generate a random 6 digit alphanumeric number to be used in short url
+app.set('view engine', 'ejs');
+app.use(express.urlencoded({ extended: true }));
+
+/*-----------------------------------------------------------------------------*/
+
+const urlDatabase = {
+  'b2xVn2': 'http://www.lighthouselabs.ca',
+  '9sm5xK': 'http://www.google.com'
+};
+
+/*-----------------------------------------------------------------------------*/
+
+// Generates a random 6 digit alphanumeric number to be used in short url
 const generateRandomString = () => {
   const randomNumber = Math.random();
   const numberInBase36 = randomNumber.toString(36);
@@ -12,18 +24,7 @@ const generateRandomString = () => {
   return shortString;
 };
 
-const express = require('express');
-const app = express();
-const PORT = 8080; // default port 8080
-app.set('view engine', 'ejs');
-app.use(express.urlencoded({ extended: true }));
-
-
-const urlDatabase = {
-  'b2xVn2': 'http://www.lighthouselabs.ca',
-  '9sm5xK': 'http://www.google.com'
-};
-
+/*-----------------------------------------------------------------------------*/
 
 // route to home page
 app.get('/', (req, res) => {
@@ -93,12 +94,23 @@ app.get('/u/:id', (req, res) => {
 });
 
 
+// deletes entry from urls
+app.post('/urls/:id/delete', (req, res) => {
+  const id = req.params.id;
+  delete urlDatabase[id];
+  res.redirect('/urls');
+});
+
+
 // route for client error
 app.get('/404', (req, res) => {
   res.render('404')
 })
 
+/*-----------------------------------------------------------------------------*/
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
+/*-----------------------------------------------------------------------------*/
