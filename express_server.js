@@ -67,7 +67,6 @@ app.get('/urls/:id', (req, res) => {
 
 // receives form submission from '/urls/new', adds the url to the urlDatabase object with a random id for a key, then redirects to long url if user clicks on the hyperlinked key
 app.post('/urls', (req, res) => {
-  console.log(req.body); 
   const randomKey = generateRandomString();
   const longURL = req.body.longURL;
   urlDatabase[randomKey] = longURL; // gets removed when server is restarted
@@ -77,7 +76,6 @@ app.post('/urls', (req, res) => {
 
 // redirects to long url
 app.get('/u/:id', (req, res) => {
-  console.log(req)
   const id = req.params.id;
   const longURL = urlDatabase[id];
   res.redirect(longURL);
