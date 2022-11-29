@@ -19,38 +19,38 @@ const urlDatabase = {
 };
 
 
-// home page
+// route to home page
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
 
-// route to display data in urlDatabase object
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-
-
-// displays only the text Hello World
+// route displays only the text Hello World
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
 
-// route to display all urls from urlDatabase object
+// route displays data in urlDatabase object
+app.get("/urls.json", (req, res) => {
+  res.json(urlDatabase);
+});
+
+
+// route displays all urls from urlDatabase object
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
 
-// route to form for user to create new url
+// routes to form for user to create new url
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
 
-// route to short url page based on id
+// routes to short url page based on id
 app.get("/urls/:id", (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id];
@@ -59,7 +59,7 @@ app.get("/urls/:id", (req, res) => {
 });
 
 
-// receives form submission from '/urls/new' and adds the url to the urlDatabase object with a random id for a key
+// receives form submission from '/urls/new', adds the url to the urlDatabase object with a random id for a key, then redirects to long url if user clicks on the hyperlinked key
 app.post("/urls", (req, res) => {
   console.log(req.body); 
   const randomKey = generateRandomString();
