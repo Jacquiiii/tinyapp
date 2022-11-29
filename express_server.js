@@ -61,6 +61,11 @@ app.get('/urls/:id', (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id];
   const templateVars = { id, longURL };
+
+  // redirects to error page if id is invalid
+  if (!longURL) {
+    res.redirect('/404');
+  }
   res.render('urls_show', templateVars);
 });
 
@@ -78,8 +83,20 @@ app.post('/urls', (req, res) => {
 app.get('/u/:id', (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id];
+  
+  // redirects to error page if id is invalid
+  if (!longURL) {
+    res.redirect('/404');
+  }
+
   res.redirect(longURL);
 });
+
+
+// route for client error
+app.get('/404', (req, res) => {
+  res.render('404')
+})
 
 
 app.listen(PORT, () => {
