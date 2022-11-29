@@ -12,23 +12,30 @@ const PORT = 8080; // default port 8080
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 
+
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
 
+
+// home page
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
+
 
 // route to display data in urlDatabase object
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
+
+// displays only the text Hello World
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
+
 
 // route to display all urls from urlDatabase object
 app.get("/urls", (req, res) => {
@@ -36,19 +43,21 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+
 // route to form for user to create new url
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
-// route to individual url based on id
+
+// route to short url page based on id
 app.get("/urls/:id", (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id];
   const templateVars = { id, longURL };
-  console.log(templateVars);
   res.render("urls_show", templateVars);
 });
+
 
 // receives form submission from '/urls/new' and adds the url to the urlDatabase object with a random id for a key
 app.post("/urls", (req, res) => {
@@ -56,8 +65,17 @@ app.post("/urls", (req, res) => {
   const randomKey = generateRandomString();
   const longURL = req.body.longURL;
   urlDatabase[randomKey] = longURL;
-  res.redirect(`/urls/:${randomKey}`); // Respond with redirect to /urls/:id
+  res.redirect(`/urls/${randomKey}`); // Respond with redirect to /urls/:id
 });
+
+
+// redirects to long url
+app.get("/u/:id", (req, res) => {
+  const id = req.params.id;
+  const longURL = urlDatabase[id];
+  res.redirect(longURL);
+});
+
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
