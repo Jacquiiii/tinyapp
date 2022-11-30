@@ -44,6 +44,10 @@ const generateRandomString = () => {
   return shortString;
 };
 
+// ****Work on this later - from Registration Errors section day 3****
+// Function to loop through users object to determine if email exists
+// const getUserByEmail = (email) => {}
+
 
 /*--------------------------------Route code-----------------------------------*/
 
@@ -172,17 +176,28 @@ app.post('/register', (req, res) => {
   const randomKey = generateRandomString();
   const username = req.body.email;
   const password = req.body.password;
-  console.log(`Registration request for new user: username: ${username} password: ${password}`);
+
+  if (username === '' || password === '') {
+    res.status(400).send('Error 400 - Invalid username or password entered');
+    console.log(users);
+    return;
+  }
+
+  for (const id in users) {
+    if (username === users[id].email) {
+      return res.status(400).send('Error 400 - The email entered already exists');
+    }
+  }
 
   users[randomKey] = {
     id: randomKey,
     email: username,
-    password: password,
-  },
+    password: password
+  };
 
   res.cookie('user_id', randomKey);
   res.redirect('/urls');
-  console.log(`New user ${username} created successfully, redirect to /urls.`)
+  console.log(users);
 });
 
 
