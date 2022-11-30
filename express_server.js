@@ -1,4 +1,5 @@
-/*---------------------------------TinyApp-------------------------------------*/
+/*------------------------------Require code----------------------------------*/
+
 
 const express = require('express');
 const cookieParser = require('cookie-parser');
@@ -9,14 +10,18 @@ app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-/*-----------------------------------------------------------------------------*/
+
+/*----------------------------Database Object---------------------------------*/
+
 
 const urlDatabase = {
   'b2xVn2': 'http://www.lighthouselabs.ca',
   '9sm5xK': 'http://www.google.com'
 };
 
-/*-----------------------------------------------------------------------------*/
+
+/*----------------------------Helper functions--------------------------------*/
+
 
 // Generates a random 6 digit alphanumeric number to be used in short url
 const generateRandomString = () => {
@@ -26,7 +31,9 @@ const generateRandomString = () => {
   return shortString;
 };
 
-/*-----------------------------------------------------------------------------*/
+
+/*--------------------------------Route code-----------------------------------*/
+
 
 // route to home page
 app.get('/', (req, res) => {
@@ -46,6 +53,7 @@ app.get('/urls.json', (req, res) => {
 });
 
 
+// GET route which renders the urls_index template
 // route displays all urls from urlDatabase object
 app.get('/urls', (req, res) => {
   const templateVars = {
@@ -56,6 +64,7 @@ app.get('/urls', (req, res) => {
 });
 
 
+// GET route which renders the urls_index template
 // routes to form for user to create new url
 app.get('/urls/new', (req, res) => {
   const templateVars = {
@@ -65,7 +74,8 @@ app.get('/urls/new', (req, res) => {
 });
 
 
-// routes to short url page based on id
+// GET route which renders the urls_show template
+// routes to short url page based on unique id
 app.get('/urls/:id', (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id];
@@ -83,7 +93,7 @@ app.get('/urls/:id', (req, res) => {
 });
 
 
-// receives form submission from '/urls/new', adds the url to the urlDatabase object with a random id for a key, then redirects to long url if user clicks on the hyperlinked key
+// POST route which receives form submission from /urls/new, adds the url to the urlDatabase object with a random id for a key, then redirects to long url if user clicks on the hyperlinked key
 app.post('/urls', (req, res) => {
   const randomKey = generateRandomString();
   const longURL = req.body.longURL;
@@ -92,7 +102,7 @@ app.post('/urls', (req, res) => {
 });
 
 
-// redirects to long url
+// GET route which redirects to long url
 app.get('/u/:id', (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id];
@@ -106,7 +116,7 @@ app.get('/u/:id', (req, res) => {
 });
 
 
-// POST route for /urls/:id/delete to remove URLs
+// POST route that deletes a URL
 app.post('/urls/:id/delete', (req, res) => {
   const id = req.params.id;
   delete urlDatabase[id];
@@ -114,7 +124,7 @@ app.post('/urls/:id/delete', (req, res) => {
 });
 
 
-// POST route that updates a URL resource
+// POST route that edits the long url of an existing entry
 app.post('/urls/:id/update', (req, res) => {
   const id = req.params.id;
   const longURL = req.body.longURL;
@@ -139,24 +149,27 @@ app.post('/logout', (req, res) => {
 });
 
 
-// route to registration page
+// GET route which renders the registration template
 app.get('/register', (req, res) => {
   const templateVars = {
     username: req.cookies["username"],
   };
-  res.render('email', templateVars);
+  res.render('registration', templateVars);
 });
 
 
-// route for client errors (e.g. unknown id entered)
+// GET route for client errors (e.g. unknown id entered)
 app.get('/404', (req, res) => {
   res.render('404');
 });
 
-/*-----------------------------------------------------------------------------*/
+
+/*---------------------------Server connection code----------------------------*/
+
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
 
 /*-----------------------------------------------------------------------------*/
