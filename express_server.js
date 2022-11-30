@@ -102,6 +102,15 @@ app.post('/urls/:id/delete', (req, res) => {
 });
 
 
+// POST route that updates a URL resource
+app.post('/urls/:id/update', (req, res) => {
+  const id = req.params.id;
+  const longURL = req.body.longURL;
+  urlDatabase[id] = longURL;
+  res.redirect('/urls');
+});
+
+
 // route for client error
 app.get('/404', (req, res) => {
   res.render('404')
