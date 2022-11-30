@@ -71,11 +71,8 @@ app.get('/urls.json', (req, res) => {
 app.get('/urls', (req, res) => {
   const templateVars = {
     urls: urlDatabase,
-    username: req.cookies["username"],
-    // username: req.cookies
+    user: users[req.cookies['user_id']],
   };
-  console.log(templateVars.username.email);
-  console.log(req.cookies);
   res.render('urls_index', templateVars);
 });
 
@@ -83,9 +80,7 @@ app.get('/urls', (req, res) => {
 // GET route which renders the urls_index template
 // routes to form for user to create new url
 app.get('/urls/new', (req, res) => {
-  const templateVars = {
-    username: req.cookies["username"],
-  };
+  const templateVars = { user: users[req.cookies['user_id']] };
   res.render('urls_new', templateVars);
 });
 
@@ -98,7 +93,7 @@ app.get('/urls/:id', (req, res) => {
   const templateVars = {
     id,
     longURL,
-    username: req.cookies["username"]
+    user: users[req.cookies['user_id']],
   };
 
   // redirects to error page if id is invalid
@@ -159,17 +154,15 @@ app.post('/login', (req, res) => {
 
 // POST route to handle logout
 app.post('/logout', (req, res) => {
-  const usernameCookie = req.body.username;
-  res.clearCookie('username', usernameCookie);
+  const usernameCookie = req.body.id;
+  res.clearCookie('user_id', usernameCookie);
   res.redirect('/urls');
 });
 
 
 // GET route which renders the registration template
 app.get('/register', (req, res) => {
-  const templateVars = {
-    username: req.cookies["username"],
-  };
+  const templateVars = { user: null };
   res.render('registration', templateVars);
 });
 
@@ -187,7 +180,7 @@ app.post('/register', (req, res) => {
     password: password,
   },
 
-  res.cookie('username', users[randomKey]);
+  res.cookie('user_id', randomKey);
   res.redirect('/urls');
   console.log(`New user ${username} created successfully, redirect to /urls.`)
 });
