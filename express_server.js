@@ -11,12 +11,25 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 
-/*----------------------------Database Object---------------------------------*/
+/*----------------------------Database Objects--------------------------------*/
 
 
 const urlDatabase = {
   'b2xVn2': 'http://www.lighthouselabs.ca',
   '9sm5xK': 'http://www.google.com'
+};
+
+const users = {
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur",
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
 };
 
 
@@ -59,7 +72,10 @@ app.get('/urls', (req, res) => {
   const templateVars = {
     urls: urlDatabase,
     username: req.cookies["username"],
+    // username: req.cookies
   };
+  console.log(templateVars.username.email);
+  console.log(req.cookies);
   res.render('urls_index', templateVars);
 });
 
@@ -155,6 +171,25 @@ app.get('/register', (req, res) => {
     username: req.cookies["username"],
   };
   res.render('registration', templateVars);
+});
+
+
+// POST route that handles registration form data
+app.post('/register', (req, res) => {
+  const randomKey = generateRandomString();
+  const username = req.body.email;
+  const password = req.body.password;
+  console.log(`Registration request for new user: username: ${username} password: ${password}`);
+
+  users[randomKey] = {
+    id: randomKey,
+    email: username,
+    password: password,
+  },
+
+  res.cookie('username', users[randomKey]);
+  res.redirect('/urls');
+  console.log(`New user ${username} created successfully, redirect to /urls.`)
 });
 
 
