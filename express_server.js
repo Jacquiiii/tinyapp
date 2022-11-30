@@ -139,6 +139,15 @@ app.post('/logout', (req, res) => {
 });
 
 
+// route to registration page
+app.get('/register', (req, res) => {
+  const templateVars = {
+    username: req.cookies["username"],
+  };
+  res.render('email', templateVars);
+});
+
+
 // route for client errors (e.g. unknown id entered)
 app.get('/404', (req, res) => {
   res.render('404');
