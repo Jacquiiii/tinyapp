@@ -1,7 +1,7 @@
 /*---------------------------------TinyApp-------------------------------------*/
 
 const express = require('express');
-const cookieParser = require('cookie-parser')
+const cookieParser = require('cookie-parser');
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -48,7 +48,7 @@ app.get('/urls.json', (req, res) => {
 
 // route displays all urls from urlDatabase object
 app.get('/urls', (req, res) => {
-  const templateVars = { 
+  const templateVars = {
     urls: urlDatabase,
     username: req.cookies["username"],
   };
@@ -58,7 +58,7 @@ app.get('/urls', (req, res) => {
 
 // routes to form for user to create new url
 app.get('/urls/new', (req, res) => {
-  const templateVars = { 
+  const templateVars = {
     username: req.cookies["username"],
   };
   res.render('urls_new', templateVars);
@@ -69,8 +69,8 @@ app.get('/urls/new', (req, res) => {
 app.get('/urls/:id', (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id];
-  const templateVars = { 
-    id, 
+  const templateVars = {
+    id,
     longURL,
     username: req.cookies["username"]
   };
@@ -139,10 +139,10 @@ app.post('/logout', (req, res) => {
 });
 
 
-// route for client error
+// route for client errors (e.g. unknown id entered)
 app.get('/404', (req, res) => {
-  res.render('404')
-})
+  res.render('404');
+});
 
 /*-----------------------------------------------------------------------------*/
 
