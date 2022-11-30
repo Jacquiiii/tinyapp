@@ -1,11 +1,13 @@
 /*---------------------------------TinyApp-------------------------------------*/
 
 const express = require('express');
+const cookieParser = require('cookie-parser')
 const app = express();
 const PORT = 8080; // default port 8080
 
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 /*-----------------------------------------------------------------------------*/
 
@@ -46,14 +48,20 @@ app.get('/urls.json', (req, res) => {
 
 // route displays all urls from urlDatabase object
 app.get('/urls', (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = { 
+    urls: urlDatabase,
+    username: req.cookies["username"],
+  };
   res.render('urls_index', templateVars);
 });
 
 
 // routes to form for user to create new url
 app.get('/urls/new', (req, res) => {
-  res.render('urls_new');
+  const templateVars = { 
+    username: req.cookies["username"],
+  };
+  res.render('urls_new', templateVars);
 });
 
 
@@ -61,7 +69,11 @@ app.get('/urls/new', (req, res) => {
 app.get('/urls/:id', (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id];
-  const templateVars = { id, longURL };
+  const templateVars = { 
+    id, 
+    longURL,
+    username: req.cookies["username"]
+  };
 
   // redirects to error page if id is invalid
   if (!longURL) {
@@ -84,7 +96,7 @@ app.post('/urls', (req, res) => {
 app.get('/u/:id', (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id];
-  
+
   // redirects to error page if id is invalid
   if (!longURL) {
     res.redirect('/404');
@@ -107,6 +119,22 @@ app.post('/urls/:id/update', (req, res) => {
   const id = req.params.id;
   const longURL = req.body.longURL;
   urlDatabase[id] = longURL;
+  res.redirect('/urls');
+});
+
+
+// POST route to handle login
+app.post('/login', (req, res) => {
+  const usernameCookie = req.body.username;
+  res.cookie('username', usernameCookie);
+  res.redirect('/urls');
+});
+
+
+// POST route to handle logout
+app.post('/logout', (req, res) => {
+  const usernameCookie = req.body.username;
+  res.clearCookie('username', usernameCookie);
   res.redirect('/urls');
 });
 

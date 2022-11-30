@@ -1,0 +1,9 @@
+<% if (username) { %>
+  <form method="POST" action="/login" class="form-inline" name="<% username %>">
+    <input name="username">
+    <button type="login" class="btn btn-outline-dark">Login</button>
+    <label for="username"><%= username %>:</label>
+  </form>
+  <% } else { %>
+    logged in
+  <% } %>
