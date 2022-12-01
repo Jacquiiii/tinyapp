@@ -52,10 +52,12 @@ const generateRandomString = () => {
 /*--------------------------------Route code-----------------------------------*/
 
 
+
 // ----route to home page---- //
 app.get('/', (req, res) => {
   res.send('Hello!');
 });
+
 
 
 // ----route displays only the text Hello World---- //
@@ -64,10 +66,12 @@ app.get('/hello', (req, res) => {
 });
 
 
+
 // ----route displays data in urlDatabase object---- //
 app.get('/urls.json', (req, res) => {
   res.json(urlDatabase);
 });
+
 
 
 // ----GET route which renders the urls_index template---- //
@@ -81,12 +85,14 @@ app.get('/urls', (req, res) => {
 });
 
 
+
 // ----GET route which renders the urls_index template---- // 
 // routes to form for user to create new url
 app.get('/urls/new', (req, res) => {
   const templateVars = { user: users[req.cookies['user_id']] };
   res.render('urls_new', templateVars);
 });
+
 
 
 // ----GET route which renders the urls_show template---- //
@@ -108,6 +114,7 @@ app.get('/urls/:id', (req, res) => {
 });
 
 
+
 // ----POST route which receives form submission from /urls/new---- //
 // adds the url to the urlDatabase object with a random id for a key, then redirects to long url if user clicks on the hyperlinked key
 app.post('/urls', (req, res) => {
@@ -116,6 +123,7 @@ app.post('/urls', (req, res) => {
   urlDatabase[randomKey] = longURL; // gets removed when server is restarted
   res.redirect(`/urls/${randomKey}`); // responds with redirect to /urls/:id
 });
+
 
 
 // ----GET route which redirects to long url---- //
@@ -132,12 +140,14 @@ app.get('/u/:id', (req, res) => {
 });
 
 
+
 // ----POST route that deletes a URL---- //
 app.post('/urls/:id/delete', (req, res) => {
   const id = req.params.id;
   delete urlDatabase[id];
   res.redirect('/urls');
 });
+
 
 
 // ----POST route that edits the long url of an existing entry---- //
@@ -149,6 +159,7 @@ app.post('/urls/:id/update', (req, res) => {
 });
 
 
+
 // // ----POST route to handle login (no longer req) ---- //
 // app.post('/login', (req, res) => {
 //   const usernameCookie = req.body.username;
@@ -157,12 +168,14 @@ app.post('/urls/:id/update', (req, res) => {
 // });
 
 
+
 // ----POST route to handle logout---- //
 app.post('/logout', (req, res) => {
   const usernameCookie = req.body.id;
   res.clearCookie('user_id', usernameCookie);
-  res.redirect('/urls');
+  res.redirect('/login');
 });
+
 
 
 // ----GET route which renders the registration template---- //
@@ -170,6 +183,7 @@ app.get('/register', (req, res) => {
   const templateVars = { user: null };
   res.render('registration', templateVars);
 });
+
 
 
 // ----POST route that handles registration form data---- //
@@ -201,8 +215,8 @@ app.post('/register', (req, res) => {
 
   res.cookie('user_id', randomKey);
   res.redirect('/urls');
-  console.log(users);
 });
+
 
 
 // ----GET route which renders the login template---- //
@@ -210,6 +224,7 @@ app.get('/login', (req, res) => {
   const templateVars = { user: null };
   res.render('login', templateVars);
 });
+
 
 
 // ----POST route that handles user login---- //
@@ -240,10 +255,12 @@ app.post('/login', (req, res) => {
 });
 
 
+
 // ----GET route for client errors (e.g. unknown id entered)---- //
 app.get('/404', (req, res) => {
   res.render('404');
 });
+
 
 
 /*---------------------------Server connection code----------------------------*/
