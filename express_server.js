@@ -171,8 +171,8 @@ app.post('/urls/:id/update', (req, res) => {
 
 // ----POST route to handle logout---- //
 app.post('/logout', (req, res) => {
-  const usernameCookie = req.body.id;
-  res.clearCookie('user_id', usernameCookie);
+  const userIdCookie = req.body.id;
+  res.clearCookie('user_id', userIdCookie);
   res.redirect('/login');
 });
 
