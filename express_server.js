@@ -15,20 +15,30 @@ app.use(cookieParser());
 
 
 const urlDatabase = {
-  'b2xVn2': 'http://www.lighthouselabs.ca',
-  '9sm5xK': 'http://www.google.com'
+  b6UTxQ: {
+    longURL: "https://www.wizardingworld.com/",
+    userID: "aJ48lW",
+  },
+  i3BoGr: {
+    longURL: "https://harrypottershop.com/",
+    userID: "aJ48lW",
+  },
 };
 
+// when registering, user is assigned a unique id for urls
+// when creating a url, user's unique id is assigned to url database
+// how can we access unique id everytime we push to url database? 
+
 const users = {
-  userRandomID: {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: "purple-monkey-dinosaur",
+  aJ48lW: {
+    id: "aJ48lW",
+    email: "hpotter@hogwarts.com",
+    password: "voldemort",
   },
-  user2RandomID: {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "dishwasher-funk",
+  b890i7: {
+    id: "b890i7",
+    email: "ron.weasly@hogwarts.com",
+    password: "wingardium-leviosa",
   },
 };
 
@@ -47,6 +57,10 @@ const generateRandomString = () => {
 
 // Variable that can be changed to true if wanting to check if user is logged in to direct to a different route
 let loggedIn = false;
+
+
+// Variable that changes to user's id when logged in which can be used as the id when user creates a new url
+let loggedInUserId = '';
 
 
 // ****Work on this later - from Registration Errors section day 3****
@@ -86,6 +100,7 @@ app.get('/urls', (req, res) => {
   const templateVars = {
     urls: urlDatabase,
     user: users[req.cookies['user_id']],
+    loginStatus: loggedIn
   };
   res.render('urls_index', templateVars);
 });
@@ -111,7 +126,7 @@ app.get('/urls/new', (req, res) => {
 // routes to short url page based on unique id
 app.get('/urls/:id', (req, res) => {
   const id = req.params.id;
-  const longURL = urlDatabase[id];
+  const longURL = urlDatabase[id].longURL;
   const templateVars = {
     id,
     longURL,
@@ -132,13 +147,14 @@ app.get('/urls/:id', (req, res) => {
 app.post('/urls', (req, res) => {
   const randomKey = generateRandomString();
   const longURL = req.body.longURL;
+  const userId = loggedInUserId;
 
   // returns error message if user attempts to perform this action while not logged in (can test in terminal with curl to confirm)
   if (!loggedIn) {
     return res.status(401).send('Error 401 - You are not authorized to perform this action. Please login to proceed.');
   }
 
-  urlDatabase[randomKey] = longURL; // gets removed when server is restarted
+  urlDatabase[randomKey] = { longURL, userId }; // gets removed when server is restarted
   res.redirect(`/urls/${randomKey}`); // responds with redirect to /urls/:id
 });
 
@@ -147,7 +163,7 @@ app.post('/urls', (req, res) => {
 // ----GET route which redirects to long url---- //
 app.get('/u/:id', (req, res) => {
   const id = req.params.id;
-  const longURL = urlDatabase[id];
+  const longURL = urlDatabase[id].longURL;
 
   // redirects to error page if id is invalid
   if (!longURL) {
@@ -172,7 +188,7 @@ app.post('/urls/:id/delete', (req, res) => {
 app.post('/urls/:id/update', (req, res) => {
   const id = req.params.id;
   const longURL = req.body.longURL;
-  urlDatabase[id] = longURL;
+  urlDatabase[id].longURL = longURL;
   res.redirect('/urls');
 });
 
@@ -238,6 +254,8 @@ app.post('/register', (req, res) => {
     password: password
   };
 
+  loggedInUserId = users[randomKey].id;
+  console.log(loggedInUserId);
   loggedIn = true;
   res.cookie('user_id', randomKey);
   res.redirect('/urls');
@@ -282,6 +300,7 @@ app.post('/login', (req, res) => {
   }
 
   loggedIn = true;
+  loggedInUserId = userFound.id;
   res.cookie('user_id', userFound.id);
   res.redirect('/urls');
 });

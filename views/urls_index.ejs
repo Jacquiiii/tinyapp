@@ -20,6 +20,11 @@
     <%- include('partials/_header') %>
     <main style="margin: 1em;">
       <h3>My URLs</h3>
+      <% if (loginStatus === false) { %>
+        <br>
+        <p>You must be logged in to view your URLs. Click <a href="/login">here</a> to login.</p>
+        <p>New to TinyApp? Click <a href="/register">here</a> to register now.</p>
+        <% } else { %>
       <table class="table">
         <thead>
           <tr>
@@ -33,7 +38,7 @@
           <% for (let id in urls) { %>
             <tr>
               <td><a href="/urls/<%= id %>"><%= id %></a></td>
-              <td><a href="/u/<%= id %>"><%= urls[id] %></a></td>
+              <td><a href="/u/<%= id %>"><%= urls[id].longURL %></a></td>
               <td>
                 <form method="GET" action="/urls/<%= id %>">
                   <input type="submit" class="btn btn-outline-primary" value="Edit">
@@ -48,6 +53,7 @@
           <% } %>
         </tbody>
       </table>
+      <% } %>
     </main>
     <!-- Bootstrap JS -->
     <script
