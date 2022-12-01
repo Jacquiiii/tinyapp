@@ -212,12 +212,22 @@ app.get('/login', (req, res) => {
 
 
 // POST route that handles user login
-// app.post('/login', (req, res) => {
-//   const username = req.body.email;
-//   const password = req.body.password;
+app.post('/login', (req, res) => {
+  const username = req.body.email;
+  const password = req.body.password;
 
-//   res.redirect('/urls');
-// });
+  for (const id in users) {
+    if (username !== users[id].email) {
+      return res.status(403).send('Error 403 - The username and/or password entered does not match our records');
+    }
+    if (password !== users[id].password) {
+      return res.status(403).send('Error 403 - The username and/or password entered does not match our records');
+    }
+  }
+
+  res.cookie('user_id', randomKey); //fix this
+  res.redirect('/urls');
+});
 
 
 // GET route for client errors (e.g. unknown id entered)
