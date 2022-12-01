@@ -33,7 +33,7 @@ const users = {
 };
 
 
-/*----------------------------Helper functions--------------------------------*/
+/*--------------------Helper functions & global variables----------------------*/
 
 
 // Generates a random 6 digit alphanumeric number to be used in short url
@@ -44,9 +44,15 @@ const generateRandomString = () => {
   return shortString;
 };
 
+
+// Variable that can be changed to true if wanting to check if user is logged in to direct to a different route
+let loggedIn = false;
+
+
 // ****Work on this later - from Registration Errors section day 3****
 // Function to loop through users object to determine if email exists
 // const getUserByEmail = (email) => {}
+
 
 
 /*--------------------------------Route code-----------------------------------*/
@@ -90,6 +96,12 @@ app.get('/urls', (req, res) => {
 // routes to form for user to create new url
 app.get('/urls/new', (req, res) => {
   const templateVars = { user: users[req.cookies['user_id']] };
+  
+  // if user attempts to create a new short url while not logged in, redirect to login page
+  if (!loggedIn) {
+    return res.redirect('/login');
+  }
+
   res.render('urls_new', templateVars);
 });
 
@@ -120,6 +132,12 @@ app.get('/urls/:id', (req, res) => {
 app.post('/urls', (req, res) => {
   const randomKey = generateRandomString();
   const longURL = req.body.longURL;
+
+  // returns error message if user attempts to perform this action while not logged in (can test in terminal with curl to confirm)
+  if (!loggedIn) {
+    return res.status(401).send('Error 401 - You are not authorized to perform this action. Please login to proceed.');
+  }
+
   urlDatabase[randomKey] = longURL; // gets removed when server is restarted
   res.redirect(`/urls/${randomKey}`); // responds with redirect to /urls/:id
 });
@@ -172,6 +190,7 @@ app.post('/urls/:id/update', (req, res) => {
 // ----POST route to handle logout---- //
 app.post('/logout', (req, res) => {
   const userIdCookie = req.body.id;
+  loggedIn = false;
   res.clearCookie('user_id', userIdCookie);
   res.redirect('/login');
 });
@@ -181,6 +200,12 @@ app.post('/logout', (req, res) => {
 // ----GET route which renders the registration template---- //
 app.get('/register', (req, res) => {
   const templateVars = { user: null };
+
+  // if user attempts to go to register page while already logged in, redirect to urls page
+  if (loggedIn) {
+    return res.redirect('/urls');
+  }
+
   res.render('registration', templateVars);
 });
 
@@ -213,6 +238,7 @@ app.post('/register', (req, res) => {
     password: password
   };
 
+  loggedIn = true;
   res.cookie('user_id', randomKey);
   res.redirect('/urls');
 });
@@ -222,6 +248,11 @@ app.post('/register', (req, res) => {
 // ----GET route which renders the login template---- //
 app.get('/login', (req, res) => {
   const templateVars = { user: null };
+  // if user attempts to go to login page while already logged in, redirect to urls page
+  if (loggedIn) {
+    return res.redirect('/urls');
+  }
+
   res.render('login', templateVars);
 });
 
@@ -250,6 +281,7 @@ app.post('/login', (req, res) => {
     return res.status(403).send('Error 403 - The password entered does not match our records');
   }
 
+  loggedIn = true;
   res.cookie('user_id', userFound.id);
   res.redirect('/urls');
 });
