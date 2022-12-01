@@ -120,7 +120,7 @@ app.get('/urls/:id', (req, res) => {
 
   // redirects to error page if id is invalid
   if (!longURL) {
-    res.redirect('/404');
+    return res.status(401).send('Error 400 - Invalid URL');
   }
   res.render('urls_show', templateVars);
 });
@@ -151,7 +151,7 @@ app.get('/u/:id', (req, res) => {
 
   // redirects to error page if id is invalid
   if (!longURL) {
-    res.redirect('/404');
+    return res.status(401).send('Error 400 - Invalid URL');
   }
 
   res.redirect(longURL);
@@ -288,10 +288,10 @@ app.post('/login', (req, res) => {
 
 
 
-// ----GET route for client errors (e.g. unknown id entered)---- //
-app.get('/404', (req, res) => {
-  res.render('404');
-});
+// // ----GET route for client errors (no longer req)---- //
+// app.get('/404', (req, res) => {
+//   res.render('404');
+// });
 
 
 
