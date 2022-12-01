@@ -177,18 +177,21 @@ app.post('/register', (req, res) => {
   const username = req.body.email;
   const password = req.body.password;
 
+  // returns error 400 if username or password is no entered
   if (username === '' || password === '') {
     res.status(400).send('Error 400 - Invalid username or password entered');
     console.log(users);
     return;
   }
 
+  // returns error 400 if user already exists
   for (const id in users) {
     if (username === users[id].email) {
       return res.status(400).send('Error 400 - The email entered already exists');
     }
   }
 
+  // creates new user and adds to users object if the above conditions are not met
   users[randomKey] = {
     id: randomKey,
     email: username,
@@ -199,6 +202,22 @@ app.post('/register', (req, res) => {
   res.redirect('/urls');
   console.log(users);
 });
+
+
+// GET route which renders the login template
+app.get('/login', (req, res) => {
+  const templateVars = { user: null };
+  res.render('login', templateVars);
+});
+
+
+// POST route that handles user login
+// app.post('/login', (req, res) => {
+//   const username = req.body.email;
+//   const password = req.body.password;
+
+//   res.redirect('/urls');
+// });
 
 
 // GET route for client errors (e.g. unknown id entered)
