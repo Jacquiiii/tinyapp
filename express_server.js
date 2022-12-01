@@ -6,6 +6,7 @@ const cookieParser = require('cookie-parser');
 const app = express();
 const PORT = 8080; // default port 8080
 
+// middleware
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -43,7 +44,7 @@ const users = {
 };
 
 
-/*--------------------Helper functions & global variables----------------------*/
+/*----------------------------Helper functions---------------------------------*/
 
 
 // Generates a random 6 digit alphanumeric number to be used in short url
@@ -55,39 +56,53 @@ const generateRandomString = () => {
 };
 
 
-// Variable that can be changed to true if wanting to check if user is logged in to direct to a different route
-let loggedIn = false;
+
+// finds user id in user object
+const findUserCookie = (req) => {
+  if (!req.cookies.user_id) {
+    return {};
+  }
+  // console.log(req.cookies.user_id);
+  return req.cookies.user_id.id;
+}
 
 
-// Variable that changes to user's id when logged in which can be used as the id when user creates a new url
-let loggedInUserId = '';
+//
+const loggedInCheck = (req) => {
+
+  // checks if cookie exists on browser
+  if (!req.cookies.user_id) {
+    return false;
+  }
+  //checks if id of cookie is in database
+  if (!(findUserCookie(req))) {
+    return false;
+  }
+
+  const userCookiePassword = req.cookies.user_id.password;
+  const userPassword = users[findUserCookie(req)].password;
+
+  //checks if password of id in database matches cookie password
+  if (userCookiePassword !== userPassword) {
+    return false;
+  }
+  return true;
+};
+
 
 
 // Filters urlDatabase object with urls created by a given user ID
 const urlsForUser = (userId) => {
-  const filteredUrls = {...urlDatabase};
-
-  // if (loggedIn) {
-  //   for (const urlID in urlDatabase) {
-  //     if (userId !== urlDatabase[urlID].userID) {
-  //       delete filteredUrls[urlID];
-  //     }
-  //   }
-  // }
-  // return filteredUrls;
+  const filteredUrls = {};
   
   for (const urlID in urlDatabase) {
-    if (userId !== urlDatabase[urlID].userID) {
-      delete filteredUrls[urlID];
+    if (userId.id === urlDatabase[urlID].userID) {
+      filteredUrls[urlID] = urlDatabase[urlID];
     }
   }
+  return filteredUrls;
 
 };
-
-
-// ****Work on this later - from Registration Errors section day 3****
-// Function to loop through users object to determine if email exists
-// const getUserByEmail = (email) => {}
 
 
 
@@ -120,14 +135,17 @@ app.get('/urls.json', (req, res) => {
 // route displays all urls from urlDatabase object
 app.get('/urls', (req, res) => {
 
-  // const urls = urlsForUser(loggedInUserId);
+  if (!loggedInCheck(req)) {
+    return res.redirect('/login');
+  }
+
+  const user = users[findUserCookie(req)];
+  const userUrls = urlsForUser(user);
+  console.log('test : ', urlsForUser(user));
 
   const templateVars = {
-    // urls: urlsForUser(loggedInUserId),
-    // urls,
-    urls: urlDatabase,
-    user: users[req.cookies['user_id']],
-    loginStatus: loggedIn
+    user,
+    urls: userUrls
   };
 
   res.render('urls_index', templateVars);
@@ -138,12 +156,14 @@ app.get('/urls', (req, res) => {
 // ----GET route which renders the urls_index template---- // 
 // routes to form for user to create new url
 app.get('/urls/new', (req, res) => {
-  const templateVars = { user: users[req.cookies['user_id']] };
-  
+
   // if user attempts to create a new short url while not logged in, redirect to login page
-  if (!loggedIn) {
+  if (!loggedInCheck(req)) {
     return res.redirect('/login');
   }
+
+  const user = users[findUserCookie(req)];
+  const templateVars = { user };
 
   res.render('urls_new', templateVars);
 });
@@ -153,12 +173,19 @@ app.get('/urls/new', (req, res) => {
 // ----GET route which renders the urls_show template---- //
 // routes to short url page based on unique id
 app.get('/urls/:id', (req, res) => {
+
+  if (!loggedInCheck(req)) {
+    return res.status(401).send('Error 401 - You are not authorized to perform this action. Please login to proceed.');
+  }
+
   const id = req.params.id;
   const longURL = urlDatabase[id].longURL;
+  const user = users[findUserCookie(req)];
+
   const templateVars = {
     id,
     longURL,
-    user: users[req.cookies['user_id']],
+    user
   };
 
   // redirects to error page if id is invalid
@@ -173,16 +200,21 @@ app.get('/urls/:id', (req, res) => {
 // ----POST route which receives form submission from /urls/new---- //
 // adds the url to the urlDatabase object with a random id for a key, then redirects to long url if user clicks on the hyperlinked key
 app.post('/urls', (req, res) => {
-  const randomKey = generateRandomString();
-  const longURL = req.body.longURL;
-  const userId = loggedInUserId;
 
   // returns error message if user attempts to perform this action while not logged in (can test in terminal with curl to confirm)
-  if (!loggedIn) {
+  if (!loggedInCheck(req)) {
     return res.status(401).send('Error 401 - You are not authorized to perform this action. Please login to proceed.');
   }
+
+  const randomKey = generateRandomString();
+  const longURL = req.body.longURL;
+  const userID = findUserCookie(req);
+
+  console.log(userID);
+  console.log(urlDatabase);
   
-  urlDatabase[randomKey] = { longURL, userId }; // gets removed when server is restarted
+  urlDatabase[randomKey] = { longURL, userID }; // gets removed when server is restarted
+  console.log(urlDatabase);
   res.redirect(`/urls/${randomKey}`); // responds with redirect to /urls/:id
 });
 
@@ -205,6 +237,11 @@ app.get('/u/:id', (req, res) => {
 
 // ----POST route that deletes a URL---- //
 app.post('/urls/:id/delete', (req, res) => {
+
+  if (!loggedInCheck(req)) {
+    return res.status(401).send('Error 401 - You are not authorized to perform this action. Please login to proceed.');
+  }
+
   const id = req.params.id;
   delete urlDatabase[id];
   res.redirect('/urls');
@@ -214,6 +251,11 @@ app.post('/urls/:id/delete', (req, res) => {
 
 // ----POST route that edits the long url of an existing entry---- //
 app.post('/urls/:id/update', (req, res) => {
+
+  if (!loggedInCheck(req)) {
+    return res.status(401).send('Error 401 - You are not authorized to perform this action. Please login to proceed.');
+  }
+
   const id = req.params.id;
   const longURL = req.body.longURL;
   urlDatabase[id].longURL = longURL;
@@ -234,7 +276,6 @@ app.post('/urls/:id/update', (req, res) => {
 // ----POST route to handle logout---- //
 app.post('/logout', (req, res) => {
   const userIdCookie = req.body.id;
-  loggedIn = false;
   res.clearCookie('user_id', userIdCookie);
   res.redirect('/login');
 });
@@ -243,10 +284,11 @@ app.post('/logout', (req, res) => {
 
 // ----GET route which renders the registration template---- //
 app.get('/register', (req, res) => {
-  const templateVars = { user: null };
+  const user = users[findUserCookie(req)];
+  const templateVars = { user };
 
   // if user attempts to go to register page while already logged in, redirect to urls page
-  if (loggedIn) {
+  if (loggedInCheck(req)) {
     return res.redirect('/urls');
   }
 
@@ -281,9 +323,7 @@ app.post('/register', (req, res) => {
     password: password
   };
 
-  loggedInUserId = users[randomKey].id;
-  loggedIn = true;
-  res.cookie('user_id', randomKey);
+  res.cookie('user_id', users[randomKey]);
   res.redirect('/urls');
 });
 
@@ -291,9 +331,10 @@ app.post('/register', (req, res) => {
 
 // ----GET route which renders the login template---- //
 app.get('/login', (req, res) => {
-  const templateVars = { user: null };
+  const user = users[findUserCookie(req)];
+  const templateVars = { user };
   // if user attempts to go to login page while already logged in, redirect to urls page
-  if (loggedIn) {
+  if (loggedInCheck(req)) {
     return res.redirect('/urls');
   }
 
@@ -325,9 +366,7 @@ app.post('/login', (req, res) => {
     return res.status(403).send('Error 403 - The password entered does not match our records');
   }
 
-  loggedIn = true;
-  loggedInUserId = userFound.id;
-  res.cookie('user_id', userFound.id);
+  res.cookie('user_id', userFound);
   res.redirect('/urls');
 });
 
