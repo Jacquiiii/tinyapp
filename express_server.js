@@ -23,11 +23,11 @@ const urlDatabase = {
     longURL: "https://harrypottershop.com/",
     userID: "aJ48lW",
   },
+  wj8so2: {
+    longURL: "https://www.hogwartslegacy.com/",
+    userID: "b890i7",
+  },
 };
-
-// when registering, user is assigned a unique id for urls
-// when creating a url, user's unique id is assigned to url database
-// how can we access unique id everytime we push to url database? 
 
 const users = {
   aJ48lW: {
@@ -61,6 +61,28 @@ let loggedIn = false;
 
 // Variable that changes to user's id when logged in which can be used as the id when user creates a new url
 let loggedInUserId = '';
+
+
+// Filters urlDatabase object with urls created by a given user ID
+const urlsForUser = (userId) => {
+  const filteredUrls = {...urlDatabase};
+
+  // if (loggedIn) {
+  //   for (const urlID in urlDatabase) {
+  //     if (userId !== urlDatabase[urlID].userID) {
+  //       delete filteredUrls[urlID];
+  //     }
+  //   }
+  // }
+  // return filteredUrls;
+  
+  for (const urlID in urlDatabase) {
+    if (userId !== urlDatabase[urlID].userID) {
+      delete filteredUrls[urlID];
+    }
+  }
+
+};
 
 
 // ****Work on this later - from Registration Errors section day 3****
@@ -97,11 +119,17 @@ app.get('/urls.json', (req, res) => {
 // ----GET route which renders the urls_index template---- //
 // route displays all urls from urlDatabase object
 app.get('/urls', (req, res) => {
+
+  // const urls = urlsForUser(loggedInUserId);
+
   const templateVars = {
+    // urls: urlsForUser(loggedInUserId),
+    // urls,
     urls: urlDatabase,
     user: users[req.cookies['user_id']],
     loginStatus: loggedIn
   };
+
   res.render('urls_index', templateVars);
 });
 
@@ -153,7 +181,7 @@ app.post('/urls', (req, res) => {
   if (!loggedIn) {
     return res.status(401).send('Error 401 - You are not authorized to perform this action. Please login to proceed.');
   }
-
+  
   urlDatabase[randomKey] = { longURL, userId }; // gets removed when server is restarted
   res.redirect(`/urls/${randomKey}`); // responds with redirect to /urls/:id
 });
@@ -236,7 +264,6 @@ app.post('/register', (req, res) => {
   // returns error 400 if username or password is no entered
   if (username === '' || password === '') {
     res.status(400).send('Error 400 - Invalid username or password entered');
-    console.log(users);
     return;
   }
 
@@ -255,7 +282,6 @@ app.post('/register', (req, res) => {
   };
 
   loggedInUserId = users[randomKey].id;
-  console.log(loggedInUserId);
   loggedIn = true;
   res.cookie('user_id', randomKey);
   res.redirect('/urls');
