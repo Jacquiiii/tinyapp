@@ -3,6 +3,7 @@
 
 const express = require('express');
 const cookieParser = require('cookie-parser');
+const bcrypt = require("bcryptjs");
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -18,29 +19,31 @@ app.use(cookieParser());
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.wizardingworld.com/",
-    userID: "aJ48lW",
+    userID: "hovkyj",
   },
   i3BoGr: {
     longURL: "https://harrypottershop.com/",
-    userID: "aJ48lW",
+    userID: "hovkyj",
   },
   wj8so2: {
     longURL: "https://www.hogwartslegacy.com/",
-    userID: "b890i7",
+    userID: "bwt5r1",
   },
 };
 
 const users = {
-  aJ48lW: {
-    id: "aJ48lW",
+  hovkyj: {
+    id: "hovkyj",
     email: "hpotter@hogwarts.com",
-    password: "voldemort",
+    password: "ilovehedwig", // stored for testing purposes, will not be stored when registering new users
+    hashedPassword: '$2a$10$qxFUwthyyQXJz8l4L/a3Cez93j.2Ugle1qojeUPKkhIm67PdmASoS'
   },
-  b890i7: {
-    id: "b890i7",
-    email: "ron.weasly@hogwarts.com",
-    password: "wingardium-leviosa",
-  },
+  bwt5r1: {
+    id: 'bwt5r1',
+    email: 'ron.weasly@hogwarts.com',
+    password: 'Hermoine', // stored for testing purposes, will not be stored when registering new users
+    hashedPassword: '$2a$10$aLC/QooN1ya3vAqeSRa5Zu4U3JwCTQnVS1.eTHAJnC..OGrNM0bAC'
+  }
 };
 
 
@@ -62,30 +65,30 @@ const findUserCookie = (req) => {
   if (!req.cookies.user_id) {
     return {};
   }
-  // console.log(req.cookies.user_id);
   return req.cookies.user_id.id;
 }
 
 
-//
+// checks if user is logged in
 const loggedInCheck = (req) => {
 
   // checks if cookie exists on browser
   if (!req.cookies.user_id) {
     return false;
   }
-  //checks if id of cookie is in database
+
+  // compares id from cookie to id from user in users object
   if (!(findUserCookie(req))) {
     return false;
   }
 
-  const userCookiePassword = req.cookies.user_id.password;
-  const userPassword = users[findUserCookie(req)].password;
-
   //checks if password of id in database matches cookie password
-  if (userCookiePassword !== userPassword) {
+  const userCookieHashedPassword = req.cookies.user_id.hashedPassword;
+  const userHashedPassword = users[findUserCookie(req)].hashedPassword;
+  if (bcrypt.compareSync(userCookieHashedPassword, userHashedPassword)) {
     return false;
   }
+  
   return true;
 };
 
@@ -141,7 +144,6 @@ app.get('/urls', (req, res) => {
 
   const user = users[findUserCookie(req)];
   const userUrls = urlsForUser(user);
-  console.log('test : ', urlsForUser(user));
 
   const templateVars = {
     user,
@@ -209,12 +211,8 @@ app.post('/urls', (req, res) => {
   const randomKey = generateRandomString();
   const longURL = req.body.longURL;
   const userID = findUserCookie(req);
-
-  console.log(userID);
-  console.log(urlDatabase);
   
   urlDatabase[randomKey] = { longURL, userID }; // gets removed when server is restarted
-  console.log(urlDatabase);
   res.redirect(`/urls/${randomKey}`); // responds with redirect to /urls/:id
 });
 
@@ -264,15 +262,6 @@ app.post('/urls/:id/update', (req, res) => {
 
 
 
-// // ----POST route to handle login (no longer req) ---- //
-// app.post('/login', (req, res) => {
-//   const usernameCookie = req.body.username;
-//   res.cookie('username', usernameCookie);
-//   res.redirect('/urls');
-// });
-
-
-
 // ----POST route to handle logout---- //
 app.post('/logout', (req, res) => {
   const userIdCookie = req.body.id;
@@ -302,6 +291,7 @@ app.post('/register', (req, res) => {
   const randomKey = generateRandomString();
   const username = req.body.email;
   const password = req.body.password;
+  const hashedPassword = bcrypt.hashSync(password, 10);
 
   // returns error 400 if username or password is no entered
   if (username === '' || password === '') {
@@ -320,7 +310,7 @@ app.post('/register', (req, res) => {
   users[randomKey] = {
     id: randomKey,
     email: username,
-    password: password
+    hashedPassword: hashedPassword
   };
 
   res.cookie('user_id', users[randomKey]);
@@ -361,8 +351,8 @@ app.post('/login', (req, res) => {
     return res.status(403).send('Error 403 - The username entered does not match our records');
   }
 
-  // returns error if user is found but password is incorrect
-  if (userFound.password !== password) {
+  // returns error if user is found but hashed password is incorrect
+  if (!bcrypt.compareSync(password, userFound['hashedPassword'])) {
     return res.status(403).send('Error 403 - The password entered does not match our records');
   }
 
