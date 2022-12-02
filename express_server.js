@@ -3,7 +3,7 @@
 
 const express = require('express');
 const cookieSession = require('cookie-session');
-const { generateRandomString, getUserByEmail } = require('./helpers.js')
+const { generateRandomString, getUserByEmail } = require('./helpers.js');
 const bcrypt = require('bcryptjs');
 const morgan = require('morgan');
 const app = express();
@@ -18,7 +18,7 @@ app.use(cookieSession({
   keys: ['secret1', 'secret2'],
   maxAge: 24 * 60 * 60 * 1000
 }));
-app.use(morgan('dev'))
+app.use(morgan('dev'));
 
 
 /*----------------------------Database Objects--------------------------------*/
@@ -61,7 +61,7 @@ const users = {
 // Not added to helpers.js as it must be in this file to work
 const urlsForUser = (userId) => {
   const filteredUrls = {};
-  
+
   for (const urlID in urlDatabase) {
     if (userId.id === urlDatabase[urlID].userID) {
       filteredUrls[urlID] = urlDatabase[urlID];
@@ -102,7 +102,7 @@ app.get('/urls.json', (req, res) => {
 app.get('/urls', (req, res) => {
 
   let id = null;
-  if(req.session.user_data && req.session.user_data.id) {
+  if (req.session.user_data && req.session.user_data.id) {
     id = req.session.user_data.id;
   }
 
@@ -120,12 +120,12 @@ app.get('/urls', (req, res) => {
 
 
 
-// ----GET route which renders the urls_index template---- // 
+// ----GET route which renders the urls_index template---- //
 // routes to form for user to create new url
 app.get('/urls/new', (req, res) => {
 
   let id = null;
-  if(req.session.user_data && req.session.user_data.id) {
+  if (req.session.user_data && req.session.user_data.id) {
     id = req.session.user_data.id;
   }
 
@@ -148,9 +148,9 @@ app.get('/urls/new', (req, res) => {
 app.get('/urls/:id', (req, res) => {
 
   let id = null;
-  if(req.session.user_data && req.session.user_data.id) {
+  if (req.session.user_data && req.session.user_data.id) {
     id = req.session.user_data.id;
-  } 
+  }
 
   const user = users[id];
 
@@ -180,7 +180,7 @@ app.get('/urls/:id', (req, res) => {
 app.post('/urls', (req, res) => {
 
   let id = null;
-  if(req.session.user_data && req.session.user_data.id) {
+  if (req.session.user_data && req.session.user_data.id) {
     id = req.session.user_data.id;
   }
 
@@ -193,7 +193,7 @@ app.post('/urls', (req, res) => {
 
   const randomKey = generateRandomString();
   const longURL = req.body.longURL;
-  
+
   urlDatabase[randomKey] = { longURL, userID: id }; // gets removed when server is restarted
   res.redirect(`/urls/${randomKey}`); // responds with redirect to /urls/:id
 });
@@ -205,7 +205,7 @@ app.get('/u/:id', (req, res) => {
   // const id = req.session.user_data.id;
 
   let id = null;
-  if(req.session.user_data && req.session.user_data.id) {
+  if (req.session.user_data && req.session.user_data.id) {
     id = req.session.user_data.id;
   }
 
@@ -232,7 +232,7 @@ app.get('/u/:id', (req, res) => {
 app.post('/urls/:id/delete', (req, res) => {
 
   let id = null;
-  if(req.session.user_data && req.session.user_data.id) {
+  if (req.session.user_data && req.session.user_data.id) {
     id = req.session.user_data.id;
   }
   // const id = req.session.user_data.id;
@@ -252,7 +252,7 @@ app.post('/urls/:id/delete', (req, res) => {
 app.post('/urls/:id/update', (req, res) => {
   // const id = req.session.user_data.id;
   let id = null;
-  if(req.session.user_data && req.session.user_data.id) {
+  if (req.session.user_data && req.session.user_data.id) {
     id = req.session.user_data.id;
   }
 
@@ -272,10 +272,9 @@ app.post('/urls/:id/update', (req, res) => {
 // ----POST route to handle logout---- //
 app.post('/logout', (req, res) => {
   let id = null;
-  if(req.session.user_data && req.session.user_data.id) {
+  if (req.session.user_data && req.session.user_data.id) {
     id = req.session.user_data.id;
   }
-  // const id = req.session.user_data.id;
   req.session = null;
   res.redirect('/login');
 });
@@ -284,10 +283,9 @@ app.post('/logout', (req, res) => {
 
 // ----GET route which renders the registration template---- //
 app.get('/register', (req, res) => {
-  // const id = req.session.user_data.id;
 
   let id = null;
-  if(req.session.user_data && req.session.user_data.id) {
+  if (req.session.user_data && req.session.user_data.id) {
     id = req.session.user_data.id;
   }
 
@@ -345,7 +343,7 @@ app.get('/login', (req, res) => {
   // const id = req.session.user_data && req.session.user_data.id;
 
   let id = null;
-  if(req.session.user_data && req.session.user_data.id) {
+  if (req.session.user_data && req.session.user_data.id) {
     id = req.session.user_data.id;
   }
 
@@ -366,7 +364,7 @@ app.get('/login', (req, res) => {
 app.post('/login', (req, res) => {
 
   let id = null;
-  if(req.session.user_data && req.session.user_data.id) {
+  if (req.session.user_data && req.session.user_data.id) {
     id = req.session.user_data.id;
   }
 
@@ -375,7 +373,7 @@ app.post('/login', (req, res) => {
   let userFound = null;
 
   // looks for matching user in users object and updates userFound variable if found
-  const user = users[getUserByEmail(email,users)];
+  const user = users[getUserByEmail(email, users)];
   if (getUserByEmail(email, users)) {
     userFound = user;
   }
