@@ -396,13 +396,6 @@ app.post('/login', (req, res) => {
 
 
 
-// // ----GET route for client errors (no longer req)---- //
-// app.get('/404', (req, res) => {
-//   res.render('404');
-// });
-
-
-
 /*---------------------------Server connection code----------------------------*/
 
 
