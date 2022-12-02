@@ -10,7 +10,6 @@ const app = express();
 const PORT = 8080; // default port 8080
 
 
-// middleware
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieSession({
@@ -39,15 +38,16 @@ const urlDatabase = {
   },
 };
 
+
 const users = {
   hovkyj: {
     id: 'hovkyj',
     email: 'hpotter@hogwarts.com',
-    hashedPassword: '$2a$10$qxFUwthyyQXJz8l4L/a3Cez93j.2Ugle1qojeUPKkhIm67PdmASoS' // password: ilovehedwig
+    hashedPassword: '$2a$10$qxFUwthyyQXJz8l4L/a3Cez93j.2Ugle1qojeUPKkhIm67PdmASoS' // password: ilovehedwig (for testing purposes)
   },
   bwt5r1: {
     id: 'bwt5r1',
-    email: 'ron.weasly@hogwarts.com', // password: Hermoine
+    email: 'ron.weasly@hogwarts.com', // password: Hermoine (for testing purposes)
     hashedPassword: '$2a$10$aLC/QooN1ya3vAqeSRa5Zu4U3JwCTQnVS1.eTHAJnC..OGrNM0bAC'
   }
 };
@@ -72,35 +72,28 @@ const urlsForUser = (userId) => {
 
 
 
-/*--------------------------------Route code-----------------------------------*/
+/*------------------------------GET route code---------------------------------*/
 
 
 
-// ----route to home page---- //
+// ------ GET / route ------ //
 app.get('/', (req, res) => {
-  res.send('Hello!');
+  res.redirect('/login');
 });
 
 
 
-// ----route displays only the text Hello World---- //
-app.get('/hello', (req, res) => {
-  res.send('<html><body>Hello <b>World</b></body></html>\n');
-});
-
-
-
-// ----route displays data in urlDatabase object---- //
+// ------ GET /urls.json route displays data in urlDatabase object---- //
 app.get('/urls.json', (req, res) => {
   res.json(urlDatabase);
 });
 
 
 
-// ----GET route which renders the urls_index template---- //
-// route displays all urls from urlDatabase object
+// ------ GET /urls route ------ //
 app.get('/urls', (req, res) => {
 
+  // determines if there is a current session cookie
   let id = null;
   if (req.session.user_data && req.session.user_data.id) {
     id = req.session.user_data.id;
@@ -114,16 +107,15 @@ app.get('/urls', (req, res) => {
 
   const urls = urlsForUser(user);
   const templateVars = { user, urls };
-
   res.render('urls_index', templateVars);
 });
 
 
 
-// ----GET route which renders the urls_index template---- //
-// routes to form for user to create new url
+// ------ GET /urls/new route to create new URL ------ //
 app.get('/urls/new', (req, res) => {
 
+  // determines if there is a current session cookie
   let id = null;
   if (req.session.user_data && req.session.user_data.id) {
     id = req.session.user_data.id;
@@ -137,29 +129,28 @@ app.get('/urls/new', (req, res) => {
   }
 
   const templateVars = { user };
-
   res.render('urls_new', templateVars);
 });
 
 
 
-// ----GET route which renders the urls_show template---- //
+// ------ GET /urls/:id route to short url ------ //
 // routes to short url page based on unique id
 app.get('/urls/:id', (req, res) => {
 
+  // determines if there is a current session cookie
   let id = null;
   if (req.session.user_data && req.session.user_data.id) {
     id = req.session.user_data.id;
   }
-
   const user = users[id];
 
+  // directs to an error if user is not logged in
   if (!user) {
     return res.status(401).send('Error 401 - You are not authorized to perform this action. Please login to proceed.');
   }
 
   const longURL = urlDatabase[req.params.id].longURL;
-
   const templateVars = {
     id: req.params.id,
     longURL,
@@ -175,50 +166,12 @@ app.get('/urls/:id', (req, res) => {
 
 
 
-// ----POST route which receives form submission from /urls/new---- //
-// adds the url to the urlDatabase object with a random id for a key, then redirects to long url if user clicks on the hyperlinked key
-app.post('/urls', (req, res) => {
-
-  let id = null;
-  if (req.session.user_data && req.session.user_data.id) {
-    id = req.session.user_data.id;
-  }
-
-  const user = users[id];
-
-  // returns error message if user attempts to perform this action while not logged in (can test in terminal with curl to confirm)
-  if (!user) {
-    return res.status(401).send('Error 401 - You are not authorized to perform this action. Please login to proceed.');
-  }
-
-  const randomKey = generateRandomString();
-  const longURL = req.body.longURL;
-
-  urlDatabase[randomKey] = { longURL, userID: id }; // gets removed when server is restarted
-  res.redirect(`/urls/${randomKey}`); // responds with redirect to /urls/:id
-});
-
-
-
-// ----GET route which redirects to long url---- //
+// ----GET /u/:id route which redirects to long url---- //
 app.get('/u/:id', (req, res) => {
-  // const id = req.session.user_data.id;
-
-  let id = null;
-  if (req.session.user_data && req.session.user_data.id) {
-    id = req.session.user_data.id;
-  }
-
-  const user = users[id];
-
-  // returns error message if user attempts to perform this action while not logged in (can test in terminal with curl to confirm)
-  if (!user) {
-    return res.status(401).send('Error 401 - You are not authorized to perform this action. Please login to proceed.');
-  }
 
   const longURL = urlDatabase[req.params.id].longURL;
 
-  // redirects to error page if id is invalid
+  // returns error if url is invalid
   if (!longURL) {
     return res.status(401).send('Error 400 - Invalid URL');
   }
@@ -228,16 +181,88 @@ app.get('/u/:id', (req, res) => {
 
 
 
-// ----POST route that deletes a URL---- //
-app.post('/urls/:id/delete', (req, res) => {
+// ----GET /register route which renders the registration template---- //
+app.get('/register', (req, res) => {
 
+  // determines if there is a current session cookie
   let id = null;
   if (req.session.user_data && req.session.user_data.id) {
     id = req.session.user_data.id;
   }
-  // const id = req.session.user_data.id;
+
+  const user = users[id];
+  const templateVars = { user };
+
+  // redirects to urls page if user attempts to go to register page while already logged in
+  if (user) {
+    return res.redirect('/urls');
+  }
+
+  res.render('registration', templateVars);
+});
+
+
+
+// ----GET /login route which renders the login template---- //
+app.get('/login', (req, res) => {
+
+  // determines if there is a current session cookie
+  let id = null;
+  if (req.session.user_data && req.session.user_data.id) {
+    id = req.session.user_data.id;
+  }
+
+  const user = users[id];
+  const templateVars = { user };
+
+  // redirect to login page if user attempts to go to login page while already logged in
+  if (user) {
+    return res.redirect('/urls');
+  }
+
+  res.render('login', templateVars);
+});
+
+
+
+/*------------------------------POST route code--------------------------------*/
+
+
+
+// ----- POST /urls route which receives form submission from /urls/new ----- //
+app.post('/urls', (req, res) => {
+
+  // determines if there is a current session cookie
+  let id = null;
+  if (req.session.user_data && req.session.user_data.id) {
+    id = req.session.user_data.id;
+  }
   const user = users[id];
 
+  // returns error message if user attempts to perform this action while not logged in
+  if (!user) {
+    return res.status(401).send('Error 401 - You are not authorized to perform this action. Please login to proceed.');
+  }
+
+  const randomKey = generateRandomString();
+  const longURL = req.body.longURL;
+  urlDatabase[randomKey] = { longURL, userID: id }; // gets removed when server is restarted
+  res.redirect(`/urls/${randomKey}`); // responds with redirect to /urls/:id
+});
+
+
+
+// ----POST /urls/:id/delete route that deletes a URL---- //
+app.post('/urls/:id/delete', (req, res) => {
+
+  // determines if there is a current session cookie
+  let id = null;
+  if (req.session.user_data && req.session.user_data.id) {
+    id = req.session.user_data.id;
+  }
+  const user = users[id];
+
+  // returns error if user is not logged in
   if (!user) {
     return res.status(401).send('Error 401 - You are not authorized to perform this action. Please login to proceed.');
   }
@@ -248,16 +273,17 @@ app.post('/urls/:id/delete', (req, res) => {
 
 
 
-// ----POST route that edits the long url of an existing entry---- //
+// ----POST /urls/:id/update route that edits the long url of an existing entry---- //
 app.post('/urls/:id/update', (req, res) => {
-  // const id = req.session.user_data.id;
+  
+  // determines if there is a current session cookie
   let id = null;
   if (req.session.user_data && req.session.user_data.id) {
     id = req.session.user_data.id;
   }
-
   const user = users[id];
 
+  // returns error if user is not logged in
   if (!user) {
     return res.status(401).send('Error 401 - You are not authorized to perform this action. Please login to proceed.');
   }
@@ -269,41 +295,26 @@ app.post('/urls/:id/update', (req, res) => {
 
 
 
-// ----POST route to handle logout---- //
+// ----POST /logout route to handle logout---- //
 app.post('/logout', (req, res) => {
+
+  // determines if there is a current session cookie
   let id = null;
   if (req.session.user_data && req.session.user_data.id) {
     id = req.session.user_data.id;
   }
+
+  // clears session cookie
   req.session = null;
+
   res.redirect('/login');
 });
 
 
 
-// ----GET route which renders the registration template---- //
-app.get('/register', (req, res) => {
-
-  let id = null;
-  if (req.session.user_data && req.session.user_data.id) {
-    id = req.session.user_data.id;
-  }
-
-  const user = users[id];
-  const templateVars = { user };
-
-  // if user attempts to go to register page while already logged in, redirect to urls page
-  if (user) {
-    return res.redirect('/urls');
-  }
-
-  res.render('registration', templateVars);
-});
-
-
-
-// ----POST route that handles registration form data---- //
+// ----POST /register route that handles registration form data---- //
 app.post('/register', (req, res) => {
+
   const randomKey = generateRandomString();
   const email = req.body.email;
   const password = req.body.password;
@@ -327,10 +338,8 @@ app.post('/register', (req, res) => {
     hashedPassword: hashedPassword
   };
 
-  // creates object to pass into session cookie
-  const userData = {
-    id: randomKey
-  };
+  // creates object to pass into session cookie (more data can be added should it become necessary in the future)
+  const userData = { id: randomKey };
 
   req.session.user_data = userData;
   res.redirect('/urls');
@@ -338,31 +347,10 @@ app.post('/register', (req, res) => {
 
 
 
-// ----GET route which renders the login template---- //
-app.get('/login', (req, res) => {
-  // const id = req.session.user_data && req.session.user_data.id;
-
-  let id = null;
-  if (req.session.user_data && req.session.user_data.id) {
-    id = req.session.user_data.id;
-  }
-
-  const user = users[id];
-  const templateVars = { user };
-
-  // if user attempts to go to login page while already logged in, redirect to urls page
-  if (user) {
-    return res.redirect('/urls');
-  }
-
-  res.render('login', templateVars);
-});
-
-
-
-// ----POST route that handles user login---- //
+// ----POST /login route that handles user login---- //
 app.post('/login', (req, res) => {
 
+  // determines if there is a current session cookie
   let id = null;
   if (req.session.user_data && req.session.user_data.id) {
     id = req.session.user_data.id;
@@ -372,7 +360,7 @@ app.post('/login', (req, res) => {
   const password = req.body.password;
   let userFound = null;
 
-  // looks for matching user in users object and updates userFound variable if found
+  // looks for matching email and updates userFound variable if found
   const user = users[getUserByEmail(email, users)];
   if (getUserByEmail(email, users)) {
     userFound = user;
@@ -389,7 +377,6 @@ app.post('/login', (req, res) => {
   }
 
   const userData = { id: userFound.id };
-
   req.session.user_data = userData;
   res.redirect('/urls');
 });
@@ -399,9 +386,11 @@ app.post('/login', (req, res) => {
 /*---------------------------Server connection code----------------------------*/
 
 
+
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
 
 
 /*-----------------------------------------------------------------------------*/
