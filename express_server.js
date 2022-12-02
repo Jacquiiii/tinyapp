@@ -166,7 +166,7 @@ app.get('/urls/:id', (req, res) => {
 
 
 
-// ----GET /u/:id route which redirects to long url---- //
+// ------ GET /u/:id route which redirects to long url ------ //
 app.get('/u/:id', (req, res) => {
 
   const longURL = urlDatabase[req.params.id].longURL;
@@ -181,7 +181,7 @@ app.get('/u/:id', (req, res) => {
 
 
 
-// ----GET /register route which renders the registration template---- //
+// ------ GET /register route which renders the registration template ------ //
 app.get('/register', (req, res) => {
 
   // determines if there is a current session cookie
@@ -203,7 +203,7 @@ app.get('/register', (req, res) => {
 
 
 
-// ----GET /login route which renders the login template---- //
+// ------ GET /login route which renders the login template ------ //
 app.get('/login', (req, res) => {
 
   // determines if there is a current session cookie
@@ -244,15 +244,15 @@ app.post('/urls', (req, res) => {
     return res.status(401).send('Error 401 - You are not authorized to perform this action. Please login to proceed.');
   }
 
-  const randomKey = generateRandomString();
+  const randomUserId = generateRandomString();
   const longURL = req.body.longURL;
-  urlDatabase[randomKey] = { longURL, userID: id }; // gets removed when server is restarted
-  res.redirect(`/urls/${randomKey}`); // responds with redirect to /urls/:id
+  urlDatabase[randomUserId] = { longURL, userID: id }; // gets removed when server is restarted
+  res.redirect(`/urls/${randomUserId}`); // responds with redirect to /urls/:id
 });
 
 
 
-// ----POST /urls/:id/delete route that deletes a URL---- //
+// ------ POST /urls/:id/delete route that deletes a URL ------ //
 app.post('/urls/:id/delete', (req, res) => {
 
   // determines if there is a current session cookie
@@ -273,7 +273,7 @@ app.post('/urls/:id/delete', (req, res) => {
 
 
 
-// ----POST /urls/:id/update route that edits the long url of an existing entry---- //
+// ------ POST /urls/:id/update route that edits an existing long url ------ //
 app.post('/urls/:id/update', (req, res) => {
   
   // determines if there is a current session cookie
@@ -295,7 +295,7 @@ app.post('/urls/:id/update', (req, res) => {
 
 
 
-// ----POST /logout route to handle logout---- //
+// ------ POST /logout route to handle logout ------ //
 app.post('/logout', (req, res) => {
 
   // determines if there is a current session cookie
@@ -312,10 +312,10 @@ app.post('/logout', (req, res) => {
 
 
 
-// ----POST /register route that handles registration form data---- //
+// ------ POST /register route that handles registration form data ------ //
 app.post('/register', (req, res) => {
 
-  const randomKey = generateRandomString();
+  const randomUserId = generateRandomString();
   const email = req.body.email;
   const password = req.body.password;
   const hashedPassword = bcrypt.hashSync(password, 10);
@@ -332,14 +332,14 @@ app.post('/register', (req, res) => {
   }
 
   // creates new user and adds to users object if the above conditions are not met
-  users[randomKey] = {
+  users[randomUserId] = {
     email,
-    id: randomKey,
+    id: randomUserId,
     hashedPassword: hashedPassword
   };
 
   // creates object to pass into session cookie (more data can be added should it become necessary in the future)
-  const userData = { id: randomKey };
+  const userData = { id: randomUserId };
 
   req.session.user_data = userData;
   res.redirect('/urls');
@@ -347,7 +347,7 @@ app.post('/register', (req, res) => {
 
 
 
-// ----POST /login route that handles user login---- //
+// ------ POST /login route that handles user login ------ //
 app.post('/login', (req, res) => {
 
   // determines if there is a current session cookie
