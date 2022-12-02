@@ -3,7 +3,8 @@
 
 const express = require('express');
 const cookieParser = require('cookie-parser');
-const bcrypt = require("bcryptjs");
+const bcrypt = require('bcryptjs');
+const morgan = require('morgan');
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -11,6 +12,7 @@ const PORT = 8080; // default port 8080
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(morgan('dev'))
 
 
 /*----------------------------Database Objects--------------------------------*/
@@ -33,15 +35,13 @@ const urlDatabase = {
 
 const users = {
   hovkyj: {
-    id: "hovkyj",
-    email: "hpotter@hogwarts.com",
-    password: "ilovehedwig", // stored for testing purposes, will not be stored when registering new users
-    hashedPassword: '$2a$10$qxFUwthyyQXJz8l4L/a3Cez93j.2Ugle1qojeUPKkhIm67PdmASoS'
+    id: 'hovkyj',
+    email: 'hpotter@hogwarts.com',
+    hashedPassword: '$2a$10$qxFUwthyyQXJz8l4L/a3Cez93j.2Ugle1qojeUPKkhIm67PdmASoS' // password: ilovehedwig
   },
   bwt5r1: {
     id: 'bwt5r1',
-    email: 'ron.weasly@hogwarts.com',
-    password: 'Hermoine', // stored for testing purposes, will not be stored when registering new users
+    email: 'ron.weasly@hogwarts.com', // password: Hermoine
     hashedPassword: '$2a$10$aLC/QooN1ya3vAqeSRa5Zu4U3JwCTQnVS1.eTHAJnC..OGrNM0bAC'
   }
 };
@@ -88,7 +88,7 @@ const loggedInCheck = (req) => {
   if (bcrypt.compareSync(userCookieHashedPassword, userHashedPassword)) {
     return false;
   }
-  
+
   return true;
 };
 
