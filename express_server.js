@@ -73,7 +73,15 @@ const urlsForUser = (userId) => {
     }
   }
   return filteredUrls;
-  
+};
+
+
+const getUserByEmail = function(email, database) {
+  for (const userData in database) {
+    if (email === database[userData].email) {
+      return userData;
+    }
+  }
 };
 
 
@@ -313,35 +321,34 @@ app.get('/register', (req, res) => {
 // ----POST route that handles registration form data---- //
 app.post('/register', (req, res) => {
   const randomKey = generateRandomString();
-  const username = req.body.email;
+  const email = req.body.email;
   const password = req.body.password;
   const hashedPassword = bcrypt.hashSync(password, 10);
 
   // returns error 400 if username or password is no entered
-  if (username === '' || password === '') {
+  if (email === '' || password === '') {
     res.status(400).send('Error 400 - Invalid username or password entered');
     return;
   }
 
   // returns error 400 if user already exists
-  for (const id in users) {
-    if (username === users[id].email) {
-      return res.status(400).send('Error 400 - The email entered already exists');
-    }
+  if (getUserByEmail(email, users)) {
+    return res.status(400).send('Error 400 - The email entered already exists');
   }
 
   // creates new user and adds to users object if the above conditions are not met
   users[randomKey] = {
+    email,
     id: randomKey,
-    email: username,
     hashedPassword: hashedPassword
   };
 
-  const cookieId = {
+  // creates object to pass into session cookie
+  const userData = {
     id: randomKey
   };
 
-  req.session.user_data = cookieId;
+  req.session.user_data = userData;
   res.redirect('/urls');
 });
 
@@ -371,15 +378,20 @@ app.get('/login', (req, res) => {
 
 // ----POST route that handles user login---- //
 app.post('/login', (req, res) => {
-  const username = req.body.email;
+
+  let id = null;
+  if(req.session.user_data && req.session.user_data.id) {
+    id = req.session.user_data.id;
+  }
+
+  const email = req.body.email;
   const password = req.body.password;
   let userFound = null;
 
   // looks for matching user in users object and updates userFound variable if found
-  for (const id in users) {
-    if (username === users[id].email) {
-      userFound = users[id];
-    }
+  const user = users[getUserByEmail(email,users)];
+  if (getUserByEmail(email, users)) {
+    userFound = user;
   }
 
   // returns error if user is not found
