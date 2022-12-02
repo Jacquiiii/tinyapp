@@ -3,10 +3,12 @@
 
 const express = require('express');
 const cookieSession = require('cookie-session');
+const { generateRandomString, getUserByEmail } = require('./helpers.js')
 const bcrypt = require('bcryptjs');
 const morgan = require('morgan');
 const app = express();
 const PORT = 8080; // default port 8080
+
 
 // middleware
 app.set('view engine', 'ejs');
@@ -51,19 +53,12 @@ const users = {
 };
 
 
-/*----------------------------Helper functions---------------------------------*/
+/*----------------------------Helper function---------------------------------*/
 
-
-// Generates a random 6 digit alphanumeric number to be used in short url
-const generateRandomString = () => {
-  const randomNumber = Math.random();
-  const numberInBase36 = randomNumber.toString(36);
-  const shortString = numberInBase36.substring(2, 8);
-  return shortString;
-};
 
 
 // Filters urlDatabase object with urls created by a given user ID
+// Not added to helpers.js as it must be in this file to work
 const urlsForUser = (userId) => {
   const filteredUrls = {};
   
@@ -73,15 +68,6 @@ const urlsForUser = (userId) => {
     }
   }
   return filteredUrls;
-};
-
-
-const getUserByEmail = function(email, database) {
-  for (const userData in database) {
-    if (email === database[userData].email) {
-      return userData;
-    }
-  }
 };
 
 
