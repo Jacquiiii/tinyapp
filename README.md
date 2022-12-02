@@ -4,8 +4,9 @@ TinyApp is a full stack web application built by Jacqui Koroll with Node and Exp
 
 ## Final Product
 
-!["screenshot description"](#)
-!["screenshot description"](#)
+!["Screenshot of Login page"](https://github.com/Jacquiiii/tinyapp/blob/main/docs/Login%20page.png)
+!["Screenshot of URLs page"](https://github.com/Jacquiiii/tinyapp/blob/main/docs/My%20URLs%20page.png)
+!["Screenshot of Tiny URL page"](https://github.com/Jacquiiii/tinyapp/blob/main/docs/URL%20page.png)
 
 ## Dependencies
 
