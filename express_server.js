@@ -120,6 +120,17 @@ app.get('/urls/:id', (req, res) => {
     return res.status(401).send('Error 401 - You are not authorized to perform this action. Please login to proceed.');
   }
 
+  // redirects to error page if id is invalid
+  if (!urlDatabase[req.params.id]) {
+    return res.status(401).send('Error 400 - Invalid URL');
+  }
+
+  // redirects to error page if id is valid but wasn't created by the user
+  const urlData = urlDatabase[req.params.id];
+  if (id !== urlData['userID']) {
+    return res.status(401).send('Error 401 - You are not authorized to perform this action. Please login to proceed.');
+  }
+
   const longURL = urlDatabase[req.params.id].longURL;
   const templateVars = {
     id: req.params.id,
@@ -127,10 +138,6 @@ app.get('/urls/:id', (req, res) => {
     user
   };
 
-  // redirects to error page if id is invalid
-  if (!longURL) {
-    return res.status(401).send('Error 400 - Invalid URL');
-  }
   res.render('urls_show', templateVars);
 });
 
@@ -139,12 +146,12 @@ app.get('/urls/:id', (req, res) => {
 // ------ GET /u/:id route which redirects to long url ------ //
 app.get('/u/:id', (req, res) => {
 
-  const longURL = urlDatabase[req.params.id].longURL;
-
   // returns error if url is invalid
-  if (!longURL) {
+  if (!urlDatabase[req.params.id]) {
     return res.status(401).send('Error 400 - Invalid URL');
   }
+
+  const longURL = urlDatabase[req.params.id].longURL;
 
   res.redirect(longURL);
 });
