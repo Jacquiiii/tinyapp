@@ -1,9 +1,11 @@
 /*------------------------------Require code----------------------------------*/
 
 
+
 const express = require('express');
 const cookieSession = require('cookie-session');
 const { generateRandomString, getUserByEmail } = require('./helpers.js');
+const { urlDatabase, users } = require('./database.js');
 const bcrypt = require('bcryptjs');
 const morgan = require('morgan');
 const app = express();
@@ -19,38 +21,6 @@ app.use(cookieSession({
 }));
 app.use(morgan('dev'));
 
-
-/*----------------------------Database Objects--------------------------------*/
-
-
-const urlDatabase = {
-  b6UTxQ: {
-    longURL: "https://www.wizardingworld.com/",
-    userID: "hovkyj",
-  },
-  i3BoGr: {
-    longURL: "https://harrypottershop.com/",
-    userID: "hovkyj",
-  },
-  wj8so2: {
-    longURL: "https://www.hogwartslegacy.com/",
-    userID: "bwt5r1",
-  },
-};
-
-
-const users = {
-  hovkyj: {
-    id: 'hovkyj',
-    email: 'hpotter@hogwarts.com',
-    hashedPassword: '$2a$10$qxFUwthyyQXJz8l4L/a3Cez93j.2Ugle1qojeUPKkhIm67PdmASoS' // password: ilovehedwig (for testing purposes)
-  },
-  bwt5r1: {
-    id: 'bwt5r1',
-    email: 'ron.weasly@hogwarts.com', // password: Hermoine (for testing purposes)
-    hashedPassword: '$2a$10$aLC/QooN1ya3vAqeSRa5Zu4U3JwCTQnVS1.eTHAJnC..OGrNM0bAC'
-  }
-};
 
 
 /*----------------------------Helper function---------------------------------*/
@@ -244,10 +214,10 @@ app.post('/urls', (req, res) => {
     return res.status(401).send('Error 401 - You are not authorized to perform this action. Please login to proceed.');
   }
 
-  const randomUserId = generateRandomString();
+  const randomUrlId = generateRandomString();
   const longURL = req.body.longURL;
-  urlDatabase[randomUserId] = { longURL, userID: id }; // gets removed when server is restarted
-  res.redirect(`/urls/${randomUserId}`); // responds with redirect to /urls/:id
+  urlDatabase[randomUrlId] = { longURL, userID: id }; // gets removed when server is restarted
+  res.redirect(`/urls/${randomUrlId}`); // responds with redirect to /urls/:id
 });
 
 

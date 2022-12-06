@@ -4,7 +4,6 @@ const { assert } = require('chai');
 const { getUserByEmail } = require('../helpers.js');
 
 
-// test code for getUserByEmail
 const testUsers = {
   "userRandomID": {
     id: "userRandomID",
